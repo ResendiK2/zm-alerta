@@ -8,12 +8,16 @@ interface ReportModalProps {
     onClose: () => void;
     onSubmit: (type: AlertType, latitude: number, longitude: number) => void;
     userLocation: { latitude: number; longitude: number } | null;
+    mapCenter: { latitude: number; longitude: number } | null;
 }
 
-export default function ReportModal({ isOpen, onClose, onSubmit, userLocation }: ReportModalProps) {
+export default function ReportModal({ isOpen, onClose, onSubmit, userLocation, mapCenter }: ReportModalProps) {
     const [step, setStep] = useState(1);
     const [selectedType, setSelectedType] = useState<AlertType | null>(null);
     const [useCurrentLocation, setUseCurrentLocation] = useState(true);
+
+    // Usa o centro do mapa como localização padrão
+    const reportLocation = mapCenter || userLocation;
 
     if (!isOpen) return null;
 
@@ -40,8 +44,8 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation }:
     };
 
     const handleSubmit = () => {
-        if (selectedType && userLocation && useCurrentLocation) {
-            onSubmit(selectedType, userLocation.latitude, userLocation.longitude);
+        if (selectedType && reportLocation) {
+            onSubmit(selectedType, reportLocation.latitude, reportLocation.longitude);
             handleClose();
         }
     };
@@ -110,20 +114,21 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation }:
                                 <div className="location-map-preview">
                                     <span className="location-pin">📍</span>
                                     <p className="location-text">
-                                        {userLocation
-                                            ? `${userLocation.latitude.toFixed(6)}, ${userLocation.longitude.toFixed(6)}`
+                                        {reportLocation
+                                            ? `${reportLocation.latitude.toFixed(6)}, ${reportLocation.longitude.toFixed(6)}`
                                             : 'Localizando...'}
                                     </p>
                                 </div>
+                                <p className="location-hint">Esta é a localização no centro do mapa. Mova o mapa para escolher um local diferente.</p>
                             </div>
                         </div>
                         <div className="modal-footer">
                             <button
                                 className="btn btn-primary"
                                 onClick={handleContinueFromStep2}
-                                disabled={!userLocation}
+                                disabled={!reportLocation}
                             >
-                                Usar minha localização atual
+                                Usar esta localização
                             </button>
                             <button className="btn btn-secondary" onClick={handleBack}>
                                 Voltar
@@ -151,8 +156,8 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation }:
                                         <div className="confirmation-item">
                                             <span className="confirmation-label">Localização:</span>
                                             <span className="confirmation-value">
-                                                {userLocation
-                                                    ? 'Sua localização atual'
+                                                {reportLocation
+                                                    ? `${reportLocation.latitude.toFixed(6)}, ${reportLocation.longitude.toFixed(6)}`
                                                     : 'Localizando...'}
                                             </span>
                                         </div>
@@ -167,7 +172,7 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation }:
                             <button
                                 className="btn btn-primary"
                                 onClick={handleSubmit}
-                                disabled={!selectedType || !userLocation}
+                                disabled={!selectedType || !reportLocation}
                             >
                                 Enviar alerta
                             </button>

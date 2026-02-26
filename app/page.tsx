@@ -19,9 +19,11 @@ export default function Home() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [showSheltersOnly, setShowSheltersOnly] = useState(false);
     const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
+    const [showLocationBanner, setShowLocationBanner] = useState(true);
+    const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
 
     const { alerts, addAlert, deleteAlert } = useAlerts();
-    const { latitude, longitude, loading: locationLoading } = useGeolocation();
+    const { latitude, longitude, loading: locationLoading, error: locationError, permissionState } = useGeolocation();
 
     const userLocation = useMemo(() =>
         latitude !== null && longitude !== null
@@ -39,8 +41,31 @@ export default function Home() {
         }
     }, [userLocation, locationLoading]);
 
+    // Auto-hide banner after location is granted or after some time
+    useEffect(() => {
+        if (userLocation || permissionState === 'denied') {
+            const timer = setTimeout(() => setShowLocationBanner(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [userLocation, permissionState]);
+
     const handleMapReady = useCallback((map: maplibregl.Map) => {
         setMapInstance(map);
+
+        // Atualiza o centro do mapa quando ele se move
+        const updateMapCenter = () => {
+            const center = map.getCenter();
+            setMapCenter({
+                latitude: center.lat,
+                longitude: center.lng,
+            });
+        };
+
+        // Define o centro inicial
+        updateMapCenter();
+
+        // Atualiza o centro quando o mapa é movido
+        map.on('moveend', updateMapCenter);
     }, []);
 
     const handleRecenterMap = () => {
@@ -60,9 +85,71 @@ export default function Home() {
         addAlert(type, lat, lng);
     };
 
+    // Renderiza o banner de localização
+    const renderLocationBanner = () => {
+        if (!showLocationBanner) return null;
+
+        if (locationLoading && !userLocation) {
+            return (
+                <div className="location-banner location-banner-info">
+                    <div className="location-banner-content">
+                        <span className="location-banner-icon">📍</span>
+                        <span>Solicitando permissão de localização...</span>
+                    </div>
+                    <button
+                        className="location-banner-close"
+                        onClick={() => setShowLocationBanner(false)}
+                        aria-label="Fechar"
+                    >
+                        ×
+                    </button>
+                </div>
+            );
+        }
+
+        if (locationError) {
+            return (
+                <div className="location-banner location-banner-error">
+                    <div className="location-banner-content">
+                        <span className="location-banner-icon">⚠️</span>
+                        <span>{locationError}</span>
+                    </div>
+                    <button
+                        className="location-banner-close"
+                        onClick={() => setShowLocationBanner(false)}
+                        aria-label="Fechar"
+                    >
+                        ×
+                    </button>
+                </div>
+            );
+        }
+
+        if (userLocation) {
+            return (
+                <div className="location-banner location-banner-success">
+                    <div className="location-banner-content">
+                        <span className="location-banner-icon">✅</span>
+                        <span>Localização ativada com sucesso!</span>
+                    </div>
+                    <button
+                        className="location-banner-close"
+                        onClick={() => setShowLocationBanner(false)}
+                        aria-label="Fechar"
+                    >
+                        ×
+                    </button>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className="app-container">
             <Header />
+            {renderLocationBanner()}
 
             <main className="main-content">
                 {activeTab === 'map' && (
@@ -73,6 +160,12 @@ export default function Home() {
                             showSheltersOnly={showSheltersOnly}
                             onMapReady={handleMapReady}
                         />
+
+                        <div className="center-marker">
+                            <div className="center-marker-pin">📍</div>
+                            <div className="center-marker-shadow"></div>
+                        </div>
+
                         <MapLegend />
                         <MapControls
                             onRecenter={handleRecenterMap}
@@ -95,6 +188,7 @@ export default function Home() {
                 onClose={() => setIsReportModalOpen(false)}
                 onSubmit={handleSubmitReport}
                 userLocation={userLocation}
+                mapCenter={mapCenter}
             />
         </div>
     );
