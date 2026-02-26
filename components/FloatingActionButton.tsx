@@ -6,8 +6,8 @@ interface FloatingActionButtonProps {
 
 export default function FloatingActionButton({ onClick }: FloatingActionButtonProps) {
     return (
-        <button className="fab" onClick={onClick}>
-            + REPORTAR
+        <button className="fab" onClick={onClick} aria-label="Reportar alerta">
+            +
         </button>
     );
 }
