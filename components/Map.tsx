@@ -100,7 +100,7 @@ export default function Map({
         const el = document.createElement('div');
         el.className = 'user-location-marker';
 
-        userLocationMarker.current = new maplibregl.Marker({ element: el })
+        userLocationMarker.current = new maplibregl.Marker({ element: el, anchor: 'center' })
             .setLngLat([userLocation.longitude, userLocation.latitude])
             .addTo(map.current);
 
@@ -151,7 +151,7 @@ export default function Map({
                 iconEl.innerHTML = alertInfo.icon;
                 el.appendChild(iconEl);
 
-                const marker = new maplibregl.Marker({ element: el })
+                const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
                     .setLngLat([alert.longitude, alert.latitude])
                     .addTo(map.current!);
 
@@ -162,7 +162,7 @@ export default function Map({
                 el.className = 'alert-marker';
                 el.innerHTML = `<div class="alert-marker-content" style="background: ${alertInfo.color}">${alertInfo.icon}</div>`;
 
-                const marker = new maplibregl.Marker({ element: el })
+                const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
                     .setLngLat([alert.longitude, alert.latitude])
                     .addTo(map.current!);
 
