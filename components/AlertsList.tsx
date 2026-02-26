@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Alert, ALERT_TYPES } from '@/types/alert';
 
 interface AlertsListProps {
@@ -8,6 +9,8 @@ interface AlertsListProps {
 }
 
 export default function AlertsList({ alerts, onDelete }: AlertsListProps) {
+    const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
+
     const getTimeRemaining = (expiresAt: number): string => {
         const now = Date.now();
         const remaining = expiresAt - now;
@@ -37,6 +40,25 @@ export default function AlertsList({ alerts, onDelete }: AlertsListProps) {
         return 'agora mesmo';
     };
 
+    const handleDeleteClick = (alertId: string) => {
+        setAlertToDelete(alertId);
+    };
+
+    const handleConfirmDelete = () => {
+        if (alertToDelete) {
+            onDelete(alertToDelete);
+            setAlertToDelete(null);
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setAlertToDelete(null);
+    };
+
+    const alertToDeleteInfo = alertToDelete
+        ? alerts.find(a => a.id === alertToDelete)
+        : null;
+
     if (alerts.length === 0) {
         return (
             <div className="alerts-list">
@@ -63,14 +85,41 @@ export default function AlertsList({ alerts, onDelete }: AlertsListProps) {
                         </div>
                         <button
                             className="alert-item-delete"
-                            onClick={() => onDelete(alert.id)}
+                            onClick={() => handleDeleteClick(alert.id)}
                             aria-label="Excluir alerta"
                         >
-                            🗑️
+                            ✕
                         </button>
                     </div>
                 );
             })}
+
+            {/* Modal de Confirmação */}
+            {alertToDelete && alertToDeleteInfo && (
+                <>
+                    <div className="delete-modal-overlay" onClick={handleCancelDelete}></div>
+                    <div className="delete-modal">
+                        <div className="delete-modal-content">
+                            <div className="delete-modal-icon">
+                                {ALERT_TYPES[alertToDeleteInfo.type].icon}
+                            </div>
+                            <h3 className="delete-modal-title">Excluir Alerta?</h3>
+                            <p className="delete-modal-message">
+                                Tem certeza que deseja excluir o alerta de <strong>{ALERT_TYPES[alertToDeleteInfo.type].title}</strong>?
+                            </p>
+                            <p className="delete-modal-warning">Esta ação não pode ser desfeita.</p>
+                            <div className="delete-modal-actions">
+                                <button className="btn btn-secondary" onClick={handleCancelDelete}>
+                                    Cancelar
+                                </button>
+                                <button className="btn btn-danger" onClick={handleConfirmDelete}>
+                                    Excluir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

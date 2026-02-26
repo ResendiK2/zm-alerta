@@ -25,6 +25,8 @@ export default function Map({
     const map = useRef<maplibregl.Map | null>(null);
     const markers = useRef<maplibregl.Marker[]>([]);
     const mapLoaded = useRef(false);
+    const userLocationMarker = useRef<maplibregl.Marker | null>(null);
+    const hasInitializedUserLocation = useRef(false);
 
     useEffect(() => {
         if (!mapContainer.current || map.current) return;
@@ -51,19 +53,19 @@ export default function Map({
                     }
                 ]
             },
-            center: userLocation ? [userLocation.longitude, userLocation.latitude] : center,
+            center: center,
             zoom: zoom,
         });
 
         // Handle map load event
         map.current.on('load', () => {
             mapLoaded.current = true;
-            console.log('Mapa carregado com sucesso');
+            console.log('✅ Mapa carregado com sucesso');
         });
 
         // Handle map errors
         map.current.on('error', (e) => {
-            console.error('Erro no mapa:', e);
+            console.error('❌ Erro no mapa:', e);
         });
 
         if (onMapReady && map.current) {
@@ -72,23 +74,48 @@ export default function Map({
 
         // Cleanup on unmount
         return () => {
+            userLocationMarker.current?.remove();
             markers.current.forEach(marker => marker.remove());
             markers.current = [];
             map.current?.remove();
             map.current = null;
+            hasInitializedUserLocation.current = false;
+            mapLoaded.current = false;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Update user location marker
+    // Update user location marker and center map when location changes
     useEffect(() => {
         if (!map.current || !userLocation) return;
 
+        console.log('📍 Localização recebida no Map.tsx:', userLocation);
+
+        // Remove old user location marker
+        if (userLocationMarker.current) {
+            userLocationMarker.current.remove();
+        }
+
+        // Create new user location marker
         const el = document.createElement('div');
         el.className = 'user-location-marker';
 
-        new maplibregl.Marker({ element: el })
+        userLocationMarker.current = new maplibregl.Marker({ element: el })
             .setLngLat([userLocation.longitude, userLocation.latitude])
             .addTo(map.current);
+
+        // Center map on user location only on first location received
+        if (!hasInitializedUserLocation.current) {
+            console.log('🎯 Centralizando mapa na localização do usuário');
+            hasInitializedUserLocation.current = true;
+
+            map.current.flyTo({
+                center: [userLocation.longitude, userLocation.latitude],
+                zoom: 15,
+                essential: true,
+                duration: 2000
+            });
+        }
     }, [userLocation]);
 
     // Update alerts on map
@@ -107,11 +134,22 @@ export default function Map({
             const alertInfo = ALERT_TYPES[alert.type];
 
             if (alertInfo.category === 'environmental') {
-                // Create circle for environmental events
+                // Create circle with icon for environmental events
                 const el = document.createElement('div');
                 el.className = 'alert-circle';
-                el.style.backgroundColor = alertInfo.color;
-                el.style.opacity = '0.3';
+
+                // Convert hex to rgba for opacity
+                const hex = alertInfo.color.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                el.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.25)`;
+
+                // Add icon in the center
+                const iconEl = document.createElement('div');
+                iconEl.className = 'alert-circle-icon';
+                iconEl.innerHTML = alertInfo.icon;
+                el.appendChild(iconEl);
 
                 const marker = new maplibregl.Marker({ element: el })
                     .setLngLat([alert.longitude, alert.latitude])

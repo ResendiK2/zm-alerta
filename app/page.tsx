@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import MapWrapper from '@/components/MapWrapper';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -23,9 +23,21 @@ export default function Home() {
     const { alerts, addAlert, deleteAlert } = useAlerts();
     const { latitude, longitude, loading: locationLoading } = useGeolocation();
 
-    const userLocation = latitude !== null && longitude !== null
-        ? { latitude, longitude }
-        : null;
+    const userLocation = useMemo(() =>
+        latitude !== null && longitude !== null
+            ? { latitude, longitude }
+            : null,
+        [latitude, longitude]
+    );
+
+    // Debug: Log user location changes
+    useEffect(() => {
+        if (userLocation) {
+            console.log('📍 Localização do usuário atualizada:', userLocation);
+        } else if (locationLoading) {
+            console.log('⏳ Aguardando geolocalização...');
+        }
+    }, [userLocation, locationLoading]);
 
     const handleMapReady = useCallback((map: maplibregl.Map) => {
         setMapInstance(map);

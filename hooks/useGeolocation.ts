@@ -28,6 +28,12 @@ export const useGeolocation = () => {
     }
 
     const onSuccess = (position: GeolocationPosition) => {
+      console.log("Geolocalização obtida:", {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      });
+
       setState({
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
@@ -37,6 +43,7 @@ export const useGeolocation = () => {
     };
 
     const onError = (error: GeolocationPositionError) => {
+      console.error("Erro de geolocalização:", error);
       setState((prev) => ({
         ...prev,
         error: error.message,
@@ -44,10 +51,20 @@ export const useGeolocation = () => {
       }));
     };
 
-    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+    const options: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    };
+
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
 
     // Watch position updates
-    const watchId = navigator.geolocation.watchPosition(onSuccess, onError);
+    const watchId = navigator.geolocation.watchPosition(
+      onSuccess,
+      onError,
+      options,
+    );
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
