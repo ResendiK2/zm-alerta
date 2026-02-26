@@ -159,14 +159,14 @@ a {
 .center-marker-pin {
   font-size: 40px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  /* animation: bounce 1s ease-in-out infinite; */
+  animation: bounce 1s ease-in-out infinite;
   line-height: 1;
 }
 
 .center-marker-shadow {
-  width: 20px;
+  width: 30px;
   height: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   filter: blur(2px);
   animation: shadow-pulse 1s ease-in-out infinite;

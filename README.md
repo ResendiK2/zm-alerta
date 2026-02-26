@@ -6,10 +6,10 @@ Sistema mobile-first de mapa colaborativo para alertas de emergência desenvolvi
 
 - **Next.js 14** (App Router)
 - **TypeScript**
-- **Supabase** - Database
+- **Supabase** - Database com sincronização em tempo real
 - **MapLibre GL JS** - Mapa interativo
 - **Vercel** - Deployment
-- **localStorage** - Armazenamento de alertas
+- **localStorage** - Cache offline
 
 ## 📱 Funcionalidades
 
@@ -24,50 +24,81 @@ Sistema mobile-first de mapa colaborativo para alertas de emergência desenvolvi
 ### Tipos de Alertas
 
 **Eventos Ambientais** (círculos coloridos):
-- 💧 Alagamento (azul)
-- ⛰️ Deslizamento (marrom)
-- ⚡ Falta de Energia (amarelo)
+- 💧 Alagamento (azul) - expira em 8h
+- ⛰️ Deslizamento (marrom) - expira em 48h
+- ⚡ Falta de Energia (amarelo) - expira em 12h
 
 **Eventos Humanos** (marcadores):
-- 🚨 Pessoa em Risco (vermelho)
-- 🏠 Abrigo Disponível (verde)
+- 🚨 Pessoa em Risco (vermelho) - expira em 6h
+- 🏠 Abrigo Disponível (verde) - expira em 7 dias
 
 ### Características
 
 - ✅ Interface mobile-first
-- ✅ Geolocalização automática
-- ✅ Alertas expiram em 24h
+- ✅ **Sincronização em tempo real entre dispositivos** (Realtime + Polling)
+- ✅ **Exibição instantânea de alertas criados**
+- ✅ **Atualização automática a cada 30 segundos** (configurável)
+- ✅ **Tempos de expiração personalizados por tipo** (6h a 7 dias)
+- ✅ Geolocalização automática com marcador central
 - ✅ Filtro de abrigos
 - ✅ Recentrar mapa na localização do usuário
 - ✅ Modal bottom sheet para reportar
 - ✅ Sem autenticação necessária
-- ✅ Armazenamento local
+- ✅ Suporte offline com cache local
 
 ## 📋 Pré-requisitos
 
 - Node.js 18+
 - yarn ou npm
-- Conta Supabase (opcional - database já preparado)
+- Conta Supabase (necessária para sincronização entre dispositivos)
 
 ## 🔧 Instalação
 
-1. As dependências já foram instaladas:
+1. Instale as dependências:
 ```bash
 yarn
 ```
 
-2. Configure as variáveis de ambiente (opcional):
+2. Configure o Supabase:
 
-Copie `.env.local.example` para `.env.local`:
+⚠️ **Importante**: Para que os alertas sejam sincronizados entre dispositivos, você precisa configurar o Supabase.
+
+📖 **Siga o guia completo em [SUPABASE_SETUP.md](SUPABASE_SETUP.md)**
+
+Resumo:
+- Crie um projeto no Supabase
+- Configure as variáveis de ambiente
+- Execute o script SQL para criar a tabela de alertas
+
 ```bash
 cp .env.local.example .env.local
+# Edite .env.local com suas credenciais do Supabase
 ```
 
-Edite `.env.local` e adicione suas credenciais do Supabase:
+**Configuração do Polling:**
+
+O sistema busca novos alertas automaticamente a cada 30 segundos (padrão). Para ajustar:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+# .env.local
+NEXT_PUBLIC_ALERTS_POLLING_INTERVAL=30000  # Em milissegundos (30 segundos)
+# Defina como 0 para desabilitar o polling
 ```
+
+**Configuração de Tempos de Expiração:**
+
+Cada tipo de alerta tem um tempo de expiração específico. Você pode personalizá-los:
+
+```env
+# .env.local
+NEXT_PUBLIC_ALERT_EXPIRATION_PESSOA_RISCO=21600000      # 6 horas
+NEXT_PUBLIC_ALERT_EXPIRATION_DESLIZAMENTO=172800000     # 48 horas
+NEXT_PUBLIC_ALERT_EXPIRATION_ALAGAMENTO=28800000        # 8 horas
+NEXT_PUBLIC_ALERT_EXPIRATION_ABRIGO=604800000           # 7 dias
+NEXT_PUBLIC_ALERT_EXPIRATION_FALTA_ENERGIA=43200000     # 12 horas
+```
+
+📖 **Veja o guia completo em [ALERT_EXPIRATION.md](ALERT_EXPIRATION.md)** para calculadora de tempos e exemplos.
 
 3. Execute o projeto:
 ```bash

@@ -1,23 +1,24 @@
-// Example types for your Supabase database
-// Update these based on your actual database schema
+import { AlertType } from "./alert";
 
-export interface Alert {
+// Types for Supabase database
+export interface DatabaseAlert {
   id: string;
-  title: string;
-  description: string;
+  type: AlertType;
   latitude: number;
   longitude: number;
   created_at: string;
-  updated_at: string;
+  expires_at: string;
 }
 
 export type Database = {
   public: {
     Tables: {
       alerts: {
-        Row: Alert;
-        Insert: Omit<Alert, "id" | "created_at" | "updated_at">;
-        Update: Partial<Omit<Alert, "id" | "created_at" | "updated_at">>;
+        Row: DatabaseAlert;
+        Insert: Omit<DatabaseAlert, "id" | "created_at"> & {
+          created_at?: string;
+        };
+        Update: Partial<Omit<DatabaseAlert, "id" | "created_at">>;
       };
     };
   };

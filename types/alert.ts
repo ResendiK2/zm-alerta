@@ -66,5 +66,45 @@ export const ALERT_TYPES: Record<AlertType, AlertTypeInfo> = {
   },
 };
 
-// Alerts expire after 24 hours
-export const ALERT_EXPIRATION_MS = 24 * 60 * 60 * 1000;
+// Tempos de expiração padrão (em milissegundos)
+const DEFAULT_EXPIRATION_TIMES: Record<AlertType, number> = {
+  pessoa_risco: 6 * 60 * 60 * 1000,      // 6 horas
+  deslizamento: 48 * 60 * 60 * 1000,     // 48 horas
+  alagamento: 8 * 60 * 60 * 1000,        // 8 horas
+  abrigo: 7 * 24 * 60 * 60 * 1000,       // 7 dias
+  falta_energia: 12 * 60 * 60 * 1000,    // 12 horas
+};
+
+/**
+ * Obtém o tempo de expiração em milissegundos para um tipo de alerta.
+ * Prioriza variáveis de ambiente, caso contrário usa o valor padrão.
+ * 
+ * IMPORTANTE: Next.js requer referências diretas a process.env.NEXT_PUBLIC_*
+ * para injetar os valores em build time. Não podemos usar notação dinâmica.
+ */
+export const getAlertExpirationMs = (type: AlertType): number => {
+  // Mapeamento direto para permitir que Next.js injete as variáveis em build time
+  const envOverrides: Record<AlertType, string | undefined> = {
+    pessoa_risco: process.env.NEXT_PUBLIC_ALERT_EXPIRATION_PESSOA_RISCO,
+    deslizamento: process.env.NEXT_PUBLIC_ALERT_EXPIRATION_DESLIZAMENTO,
+    alagamento: process.env.NEXT_PUBLIC_ALERT_EXPIRATION_ALAGAMENTO,
+    abrigo: process.env.NEXT_PUBLIC_ALERT_EXPIRATION_ABRIGO,
+    falta_energia: process.env.NEXT_PUBLIC_ALERT_EXPIRATION_FALTA_ENERGIA,
+  };
+
+  const envValue = envOverrides[type];
+  
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      console.log(`⏱️ Usando tempo customizado para ${type}: ${parsed}ms (${parsed / 60000} minutos)`);
+      return parsed;
+    }
+  }
+
+  console.log(`⏱️ Usando tempo padrão para ${type}: ${DEFAULT_EXPIRATION_TIMES[type]}ms`);
+  return DEFAULT_EXPIRATION_TIMES[type];
+};
+
+// Mantido por compatibilidade (usa pessoa_risco como padrão)
+export const ALERT_EXPIRATION_MS = DEFAULT_EXPIRATION_TIMES.pessoa_risco;

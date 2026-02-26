@@ -6,7 +6,7 @@ import { AlertType, ALERT_TYPES } from '@/types/alert';
 interface ReportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (type: AlertType, latitude: number, longitude: number) => void;
+    onSubmit: (type: AlertType, latitude: number, longitude: number) => Promise<void>;
     userLocation: { latitude: number; longitude: number } | null;
     mapCenter: { latitude: number; longitude: number } | null;
 }
@@ -15,6 +15,7 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation, m
     const [step, setStep] = useState(1);
     const [selectedType, setSelectedType] = useState<AlertType | null>(null);
     const [useCurrentLocation, setUseCurrentLocation] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Usa o centro do mapa como localização padrão
     const reportLocation = mapCenter || userLocation;
@@ -43,18 +44,29 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation, m
         }
     };
 
-    const handleSubmit = () => {
-        if (selectedType && reportLocation) {
-            onSubmit(selectedType, reportLocation.latitude, reportLocation.longitude);
-            handleClose();
+    const handleSubmit = async () => {
+        if (selectedType && reportLocation && !isSubmitting) {
+            try {
+                setIsSubmitting(true);
+                await onSubmit(selectedType, reportLocation.latitude, reportLocation.longitude);
+                handleClose();
+            } catch (error) {
+                console.error('Erro ao enviar alerta:', error);
+                alert('Erro ao enviar alerta. Tente novamente.');
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
     const handleClose = () => {
-        setStep(1);
-        setSelectedType(null);
-        setUseCurrentLocation(true);
-        onClose();
+        if (!isSubmitting) {
+            setStep(1);
+            setSelectedType(null);
+            setUseCurrentLocation(true);
+            setIsSubmitting(false);
+            onClose();
+        }
     };
 
     const alertTypesList: AlertType[] = ['alagamento', 'deslizamento', 'falta_energia', 'pessoa_risco', 'abrigo'];
@@ -172,11 +184,15 @@ export default function ReportModal({ isOpen, onClose, onSubmit, userLocation, m
                             <button
                                 className="btn btn-primary"
                                 onClick={handleSubmit}
-                                disabled={!selectedType || !reportLocation}
+                                disabled={!selectedType || !reportLocation || isSubmitting}
                             >
-                                Enviar alerta
+                                {isSubmitting ? 'Enviando...' : 'Enviar alerta'}
                             </button>
-                            <button className="btn btn-secondary" onClick={handleBack}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleBack}
+                                disabled={isSubmitting}
+                            >
                                 Voltar
                             </button>
                         </div>

@@ -22,7 +22,7 @@ export default function Home() {
     const [showLocationBanner, setShowLocationBanner] = useState(true);
     const [mapCenter, setMapCenter] = useState<{ latitude: number; longitude: number } | null>(null);
 
-    const { alerts, addAlert, deleteAlert } = useAlerts();
+    const { alerts, myAlerts, addAlert, deleteAlert } = useAlerts();
     const { latitude, longitude, loading: locationLoading, error: locationError, permissionState } = useGeolocation();
 
     const userLocation = useMemo(() =>
@@ -81,8 +81,13 @@ export default function Home() {
         setShowSheltersOnly(!showSheltersOnly);
     };
 
-    const handleSubmitReport = (type: AlertType, lat: number, lng: number) => {
-        addAlert(type, lat, lng);
+    const handleSubmitReport = async (type: AlertType, lat: number, lng: number) => {
+        try {
+            await addAlert(type, lat, lng);
+            console.log('✅ Alerta enviado com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao enviar alerta:', error);
+        }
     };
 
     // Renderiza o banner de localização
@@ -177,7 +182,7 @@ export default function Home() {
                 )}
 
                 {activeTab === 'alerts' && (
-                    <AlertsList alerts={alerts} onDelete={deleteAlert} />
+                    <AlertsList alerts={myAlerts} onDelete={deleteAlert} />
                 )}
             </main>
 
