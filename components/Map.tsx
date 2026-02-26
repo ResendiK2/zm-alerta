@@ -24,16 +24,46 @@ export default function Map({
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const markers = useRef<maplibregl.Marker[]>([]);
+    const mapLoaded = useRef(false);
 
     useEffect(() => {
         if (!mapContainer.current || map.current) return;
 
-        // Initialize map
+        // Initialize map with OpenStreetMap style
         map.current = new maplibregl.Map({
             container: mapContainer.current,
-            style: 'https://demotiles.maplibre.org/style.json',
+            style: {
+                version: 8,
+                sources: {
+                    osm: {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '&copy; OpenStreetMap Contributors',
+                        maxzoom: 19
+                    }
+                },
+                layers: [
+                    {
+                        id: 'osm',
+                        type: 'raster',
+                        source: 'osm'
+                    }
+                ]
+            },
             center: userLocation ? [userLocation.longitude, userLocation.latitude] : center,
             zoom: zoom,
+        });
+
+        // Handle map load event
+        map.current.on('load', () => {
+            mapLoaded.current = true;
+            console.log('Mapa carregado com sucesso');
+        });
+
+        // Handle map errors
+        map.current.on('error', (e) => {
+            console.error('Erro no mapa:', e);
         });
 
         if (onMapReady && map.current) {
