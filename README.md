@@ -1,4 +1,4 @@
-# SOS JF - Sistema Colaborativo de Alertas
+# Zona da Mata Alertas - Sistema Colaborativo de Alertas
 
 Sistema mobile-first de mapa colaborativo para alertas de emergência desenvolvido com Next.js 14, TypeScript, Supabase e MapLibre GL JS.
 

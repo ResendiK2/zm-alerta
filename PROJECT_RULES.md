@@ -29,7 +29,7 @@ Structure:
 
 Top Header (fixed height)
 - Left: app logo icon
-- Title text: "SOS JF"
+- Title text: "Zona da Mata Alertas"
 - Right: help icon button (question mark)
 
 Main Area:
