@@ -157,33 +157,31 @@ export default function Home() {
             {renderLocationBanner()}
 
             <main className="main-content">
-                {activeTab === 'map' && (
-                    <>
-                        <MapWrapper
-                            alerts={alerts}
-                            userLocation={userLocation}
-                            showSheltersOnly={showSheltersOnly}
-                            onMapReady={handleMapReady}
-                        />
+                <div className={`tab-content ${activeTab === 'map' ? 'active' : ''}`}>
+                    <MapWrapper
+                        alerts={alerts}
+                        userLocation={userLocation}
+                        showSheltersOnly={showSheltersOnly}
+                        onMapReady={handleMapReady}
+                    />
 
-                        <div className="center-marker">
-                            <div className="center-marker-pin">📍</div>
-                            <div className="center-marker-shadow"></div>
-                        </div>
+                    <div className="center-marker">
+                        <div className="center-marker-pin">📍</div>
+                        <div className="center-marker-shadow"></div>
+                    </div>
 
-                        <MapLegend />
-                        <MapControls
-                            onRecenter={handleRecenterMap}
-                            onToggleShelters={handleToggleShelters}
-                            showSheltersOnly={showSheltersOnly}
-                        />
-                        <FloatingActionButton onClick={() => setIsReportModalOpen(true)} />
-                    </>
-                )}
+                    <MapLegend />
+                    <MapControls
+                        onRecenter={handleRecenterMap}
+                        onToggleShelters={handleToggleShelters}
+                        showSheltersOnly={showSheltersOnly}
+                    />
+                    <FloatingActionButton onClick={() => setIsReportModalOpen(true)} />
+                </div>
 
-                {activeTab === 'alerts' && (
+                <div className={`tab-content ${activeTab === 'alerts' ? 'active' : ''}`}>
                     <AlertsList alerts={myAlerts} onDelete={deleteAlert} />
-                )}
+                </div>
             </main>
 
             <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
