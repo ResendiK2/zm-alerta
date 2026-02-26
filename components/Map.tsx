@@ -15,7 +15,7 @@ interface MapProps {
 
 export default function Map({
     center = [-43.3516, -21.7645], // Juiz de Fora coordinates as default
-    zoom = 13,
+    zoom = 18,
     alerts,
     userLocation,
     showSheltersOnly = false,
@@ -42,7 +42,7 @@ export default function Map({
                         tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
                         tileSize: 256,
                         attribution: '&copy; OpenStreetMap Contributors',
-                        maxzoom: 19
+                        maxzoom: 18
                     }
                 },
                 layers: [
@@ -55,6 +55,8 @@ export default function Map({
             },
             center: center,
             zoom: zoom,
+            minZoom: 12,
+            maxZoom: 18,
         });
 
         // Handle map load event
@@ -111,7 +113,7 @@ export default function Map({
 
             map.current.flyTo({
                 center: [userLocation.longitude, userLocation.latitude],
-                zoom: 15,
+                zoom: 18,
                 essential: true,
                 duration: 2000
             });

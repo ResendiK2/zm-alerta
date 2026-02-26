@@ -72,7 +72,7 @@ export default function Home() {
         if (mapInstance && userLocation) {
             mapInstance.flyTo({
                 center: [userLocation.longitude, userLocation.latitude],
-                zoom: 14,
+                zoom: 18,
             });
         }
     };
