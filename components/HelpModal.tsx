@@ -57,7 +57,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                     <section className="help-section">
                         <h3>🔔 Gerenciando Alertas</h3>
                         <p>
-                            Na aba <strong>"Alertas"</strong> (👁️) você pode visualizar todos
+                            Na aba <strong>&quot;Alertas&quot;</strong> (👁️) você pode visualizar todos
                             os alertas em formato de lista com detalhes completos.
                         </p>
                     </section>
